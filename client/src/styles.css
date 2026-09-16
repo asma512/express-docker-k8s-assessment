@@ -1,0 +1,17 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #14213d;
+}
+
+h1 {
+  color: #0f172a;
+}
+
+ul {
+  line-height: 1.8;
+}
