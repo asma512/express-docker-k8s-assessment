@@ -1,19 +1,30 @@
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/bookshelf';
+const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/bookshelf';
 
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected successfully');
+});
+
+mongoose.connection.on('error', (error) => {
+  console.error('MongoDB connection error:', error.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('MongoDB disconnected');
+});
+
+const connectDB = async () => {
   try {
     await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 5000,
     });
 
-    console.log('MongoDB connected successfully');
-    return true;
+    return mongoose.connection.readyState === 1;
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
     return false;
   }
 };
 
-module.exports = { connectDB };
+module.exports = { connectDB, mongoUri };

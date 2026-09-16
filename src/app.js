@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 
 const authRoutes = require('./routes/auth');
 const bookRoutes = require('./routes/books');
@@ -21,9 +22,12 @@ app.use((req, res, next) => {
 });
 
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
+  const dbConnected = mongoose.connection.readyState === 1;
+
+  res.status(dbConnected ? 200 : 503).json({
+    status: dbConnected ? 'ok' : 'degraded',
     service: 'book-api',
+    database: dbConnected ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
   });
 });
