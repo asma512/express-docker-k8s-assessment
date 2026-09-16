@@ -1,9 +1,19 @@
 Production deployment should begin with a repeatable image lifecycle: build the Express API and the React client locally or in CI, store the images in Amazon Elastic Container Registry (ECR), and deploy using immutable versions. This reduces drift between environments and makes rollback simpler if a deployment introduces regressions. In a standard AWS workflow, the CI pipeline would run the tests, build the Docker images, push them to ECR, and update the Kubernetes manifests or deployment settings to reference the new tagged image. The Nginx client image would be built as a static artifact and served efficiently, while the API image would manage server-side logic and MongoDB connectivity.
 
-For this project, I would choose Amazon EKS as the primary production target because it matches the assignment’s focus on orchestration, scaling, and cloud-native deployment. EKS is better suited for a multi-replica, resilient application that may need rolling updates, health checks, and autoscaling over time. EC2 with Docker Compose is a good option for smaller deployments or internal tools, because it is easy to set up and inexpensive to run. However, Compose on EC2 requires more manual operations, less predictable scaling, and less orchestration control than Kubernetes. In short, Compose is faster for a simple proof of concept, while EKS is the stronger long-term production decision.
+For this project, I would choose Amazon EKS as the primary production target because it matches the assignment’s focus on orchestration, scaling, and cloud-native deployment. EKS is better suited for a multi-replica, resilient application that may need rolling updates, health checks, and autoscaling over time. EC2 with Docker Compose is a good option for smaller deployments or internal tools because it is easy to set up and inexpensive to run, but it requires more manual operations and less orchestration control than Kubernetes. In short, Compose is faster for a simple proof of concept, while EKS is the stronger long-term production decision.
 
 Environment secrets must not be stored in the repository. I would inject values such as JWT secrets, database credentials, and cloud configuration through AWS Secrets Manager or AWS Systems Manager Parameter Store, then mount them as environment variables or Kubernetes Secrets. This keeps configuration out of source control, supports rotation without rebuilding images, and reduces the risk of accidental credential exposure.
 
 The scaling strategy should depend on the workload. Horizontal scaling is the better choice when traffic increases and multiple replicas can share the load behind a load balancer. Vertical scaling is more appropriate when the app is resource-intensive on a single instance but not yet large enough to justify cluster-level scaling. In production, the usual approach is to start with a modest replica count, enable autoscaling on CPU or memory use, and scale vertically only when the system design has not yet been sufficiently distributed.
 
 Cost control is essential. The core AWS resources for this design include ECR, EKS control plane and worker nodes, a load balancer, and persistent storage for MongoDB. To minimize cost, I would keep node groups right-sized, enable autoscaling to avoid overprovisioning, use managed services where possible, and avoid unnecessary extra resources during low-traffic periods. A small, well-managed cluster with autoscaling and a managed database service is the most cost-effective path for a production workload without sacrificing reliability.
+
+Operationally, the deployment flow would be:
+
+1. Build the API and client images in CI.
+2. Push the images to ECR with immutable tags.
+3. Update Kubernetes deployment manifests or Helm values to the latest image digest.
+4. Apply the manifests to EKS using kubectl or a GitOps workflow.
+5. Watch readiness/liveness probes and rollback immediately if health checks degrade.
+
+This production pattern keeps the assessment aligned with the brief while remaining realistic for a small cloud-native application.

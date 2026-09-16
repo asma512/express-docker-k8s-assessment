@@ -47,7 +47,24 @@ Health check:
 curl http://localhost:3000/health
 ```
 
-If MongoDB is not running locally, the health endpoint will return a degraded status instead of a full success response.
+The app includes a local MongoDB fallback for development. If MongoDB is not running or the configured URI is unavailable, the application automatically starts an in-memory MongoDB instance so the server can still boot and testing can continue without a separate database process.
+
+Example register request:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"user@example.com","password":"Password123!"}'
+```
+
+Example protected book creation:
+
+```bash
+curl -X POST http://localhost:3000/api/books \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"title":"The Hobbit","author":"J.R.R. Tolkien","category":"Fantasy","price":15.99,"inStock":true}'
+```
 
 ## Docker Compose
 

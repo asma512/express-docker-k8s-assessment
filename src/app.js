@@ -21,6 +21,15 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Book API is running',
+    health: '/health',
+    auth: '/api/auth',
+    books: '/api/books',
+  });
+});
+
 app.get('/health', (req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;
 
